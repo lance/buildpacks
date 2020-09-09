@@ -3,8 +3,8 @@ name: Releases
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - 'lance/add-changelog-and-releases'
 
 jobs:
   build-and-publish:
@@ -33,8 +33,26 @@ jobs:
       - name: Build
         run: PACK_CMD=./pack make
 
+      - name: Conventional Changelog Action
+        uses: TriPSs/conventional-changelog-action@v3
+        id: changelog
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version-file: './version.json'
+          skip-on-empty: false
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          release_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+
       - name: Push Images
         env:
           USER: ${{ secrets.QUAY_USER }}
           PASS: ${{ secrets.QUAY_TOKEN }}
-        run: docker login -u "$USER" -p "$PASS" quay.io && make publish
+        run: echo ${{ steps.changelog.outputs.clean_changelog }}
+        # run: docker login -u "$USER" -p "$PASS" quay.io && make publish
