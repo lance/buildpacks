@@ -12,15 +12,7 @@ platform_dir=$2
 source "$bp_dir/lib/build.sh"
 rm -rf "$build_dir/__pycache__"
 
+install_or_reuse_invoker "$bp_dir" "$build_dir" "$layers_dir/.invoker"
 install_or_reuse_tools "$layers_dir/tools"
 install_or_reuse_flask "$layers_dir"
-export PATH=$layers_dir/tools/bin:$PATH
-
-install_or_reuse_invoker "$bp_dir" "$build_dir" "$layers_dir/.invoker"
-install_or_reuse_pycache "$build_dir" "$layers_dir/__pycache__"
-
-cat <<TOML > "${layers_dir}/launch.toml"
-[[processes]]
-type = "web"
-command = "cd .invoker && npm start"
-TOML
+export PATH=$layers_dir/tools/bin:$PATH 
